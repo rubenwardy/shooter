@@ -39,7 +39,7 @@ minetest.register_entity("shooter_grenade:grenade_entity", {
 	end,
 	on_step = function(self, dtime)
 		self.timer = self.timer + dtime
-		if self.timer > 0.2 then
+		if self.timer > 0.1 then
 			local pos = self.object:get_pos()
 			local above = {x=pos.x, y=pos.y + 1, z=pos.z}
 			if minetest.get_node(pos).name ~= "air" then
@@ -81,7 +81,7 @@ minetest.register_tool("shooter_grenade:grenade", {
 			local obj = minetest.add_entity(pos, "shooter_grenade:grenade_entity")
 			if obj then
 				minetest.sound_play("shooter_throw", {object=obj})
-				obj:set_velocity(vector.multiply(dir, 15))
+				obj:set_velocity(vector.multiply(dir, 20))
 				obj:set_acceleration({x=dir.x * -3, y=-10, z=dir.z * -3})
 				obj:set_yaw(yaw + math.pi / 2)
 				local ent = obj:get_luaentity()
