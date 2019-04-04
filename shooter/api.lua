@@ -34,7 +34,7 @@ shooter.config = {
 	allow_entities = false,
 	allow_players = true,
 	rounds_update_time = 0.4,
-	camera_height = 1.5,
+	damage_multiplier = 1,
 }
 
 shooter.default_particles = {
@@ -58,21 +58,31 @@ local shots = {}
 local shooting = {}
 local config = shooter.config
 local server_step = minetest.settings:get("dedicated_server_step")
+local v3d = vector
+local PI = math.pi
+local sin = math.sin
+local cos = math.cos
+local sqrt = math.sqrt
+local phi = (math.sqrt(5) + 1) / 2 -- Golden ratio
 
 shooter.register_weapon = function(name, def)
+	-- Backwards compatibility
+	if not def.spec.sounds then
+		def.spec.sounds = def.sounds or {}
+	end
+	if not def.spec.sounds.shot and def.spec.sound then
+		def.spec.sounds.shot = def.spec.sound
+	end
 	-- Fix definition table
-	def.sounds = def.sounds or {}
-	def.sounds.reload = def.sounds.reload or "shooter_reload"
-	def.sounds.fail_shot = def.sounds.fail_shot or "shooter_click"
-	def.reload_item = def.reload_item or "shooter:ammo"
+	def.spec.reload_item = def.reload_item or "shooter:ammo"
 	def.spec.tool_caps.full_punch_interval = math.max(server_step,
 		def.spec.tool_caps.full_punch_interval)
 	def.spec.wear = math.ceil(65535 / def.spec.rounds)
-	def.spec.unloaded_item = name
 	def.unloaded_item = def.unloaded_item or {
 		description = def.description.." (unloaded)",
 		inventory_image = def.inventory_image,
 	}
+	def.unloaded_item.name = name
 	shooter.registered_weapons[name] = table.copy(def)
 	-- Register loaded item tool
 	minetest.register_tool(name.."_loaded", {
@@ -83,7 +93,8 @@ shooter.register_weapon = function(name, def)
 				itemstack = def.on_use(itemstack, user, pointed_thing)
 			end
 			if itemstack then
-				local spec = shooter.get_weapon_spec(name)
+				local spec = shooter.get_weapon_spec(nil, name) or
+					table.copy(def.spec)
 				if shooter.fire_weapon(user, itemstack, spec) then
 					itemstack:add_wear(def.spec.wear)
 					if itemstack:get_count() == 0 then
@@ -93,6 +104,7 @@ shooter.register_weapon = function(name, def)
 			end
 			return itemstack
 		end,
+		unloaded_item = def.unloaded_item,
 		on_hit = def.on_hit,
 		groups = {not_in_creative_inventory=1},
 	})
@@ -106,11 +118,13 @@ shooter.register_weapon = function(name, def)
 			if inv then
 				local stack = def.reload_item
 				if inv:contains_item("main", stack) then
-					minetest.sound_play(def.sounds.reload, {object=user})
+					local sound = def.spec.sounds.reload or "shooter_reload"
+					minetest.sound_play(sound, {object=user})
 					inv:remove_item("main", stack)
 					itemstack:replace(name.."_loaded 1 1")
 				else
-					minetest.sound_play(def.sounds.fail_shot, {object=user})
+					local sound = def.spec.sounds.fail_shot or "shooter_click"
+					minetest.sound_play(sound, {object=user})
 				end
 			end
 			return itemstack
@@ -120,11 +134,9 @@ end
 
 shooter.get_weapon_spec = function(_, name)
 	local def = shooter.registered_weapons[name]
-	if not def then
-		return nil
+	if def then
+		return table.copy(def.spec)
 	end
-
-	return table.copy(def.spec)
 end
 
 shooter.get_configuration = function(conf)
@@ -147,16 +159,14 @@ shooter.spawn_particles = function(pos, particles)
 	if not config.enable_particle_fx == true or particles.amount == 0 then
 		return
 	end
-	local copy = function(v)
-		return type(v) == "table" and table.copy(v) or v
-	end
-	local p = {}
 	for k, v in pairs(shooter.default_particles) do
-		p[k] = particles[k] and copy(particles[k]) or copy(v)
+		if not particles[k] then
+			particles[k] = type(v) == "table" and table.copy(v) or v
+		end
 	end
-	p.minpos = vector.subtract(pos, p.minpos)
-	p.maxpos = vector.add(pos, p.maxpos)
-	minetest.add_particlespawner(p)
+	particles.minpos = v3d.subtract(pos, particles.minpos)
+	particles.maxpos = v3d.add(pos, particles.maxpos)
+	minetest.add_particlespawner(particles)
 end
 
 shooter.play_node_sound = function(node, pos)
@@ -227,19 +237,92 @@ end
 
 shooter.punch_object = function(object, tool_caps, dir, on_blast)
 	local do_damage = true
+	local groups = tool_caps.damage_groups or {}
 	if on_blast and not object:is_player() then
 		local ent = object:get_luaentity()
 		if ent then
 			local def = minetest.registered_entities[ent.name] or {}
-			if def.on_blast then
-				do_damage = def.on_blast(ent, tool_caps.fleshy)
+			if def.on_blast and groups.fleshy then
+				do_damage = def.on_blast(ent, groups.fleshy *
+					config.damage_multiplier)
 			end
 		end
 	end
 	if do_damage then
+		for k, v in pairs(groups) do
+			tool_caps.damage_groups[k] = v * config.damage_multiplier
+		end
 		object:punch(object, nil, tool_caps, dir)
 		return true
 	end
+end
+
+local function matrix_from_quat(q)
+	local m = {{}, {}, {}}
+	m[1][1] = 1 - 2 * q.y * q.y - 2 * q.z * q.z
+	m[1][2] = 2 * q.x * q.y + 2 * q.z * q.w
+	m[1][3] = 2 * q.x * q.z - 2 * q.y * q.w
+	m[2][1] = 2 * q.x * q.y - 2 * q.z * q.w
+	m[2][2] = 1 - 2 * q.x * q.x - 2 * q.z * q.z
+	m[2][3] = 2 * q.z * q.y + 2 * q.x * q.w
+	m[3][1] = 2 * q.x * q.z + 2 * q.y * q.w
+	m[3][2] = 2 * q.z * q.y - 2 * q.x * q.w
+	m[3][3] = 1 - 2 * q.x * q.x - 2 * q.y * q.y
+	return m
+end
+
+local function quat_from_angle_axis(angle, axis)
+	local t = angle / 2
+	local s = sin(t)
+	return {
+		x = s * axis.x,
+		y = s * axis.y,
+		z = s * axis.z,
+		w = cos(t),
+	}
+end
+
+v3d.cross = function(v1, v2)
+	return {
+		x = v1.y * v2.z - v2.y * v1.z,
+		y = v1.z * v2.x - v2.z * v1.x,
+		z = v1.x * v2.y - v2.x * v1.y,
+	}
+end
+
+v3d.mult_matrix = function(v, m)
+	return {
+		x = m[1][1] * v.x + m[1][2] * v.y + m[1][3] * v.z,
+		y = m[2][1] * v.x + m[2][2] * v.y + m[2][3] * v.z,
+		z = m[3][1] * v.x + m[3][2] * v.y + m[3][3] * v.z,
+	}
+end
+
+v3d.rotate = function(v, angle, axis)
+	local q = quat_from_angle_axis(angle, axis)
+	local m = matrix_from_quat(q)
+	return v3d.mult_matrix(v, m)
+end
+
+local function get_directions(dir, spec)
+	local directions = {dir}
+	local n = spec.shots or 1
+	if n > 1 then
+		local right = v3d.normalize(v3d.cross(dir, {x=0, y=1, z=0}))
+		local up = v3d.normalize(v3d.cross(dir, right))
+		local s = spec.spread or 10
+		s = s * 0.017453 -- Convert to radians
+		for k = 1, n - 1 do
+			-- Sunflower seed arrangement
+			local r = sqrt(k - 0.5) / sqrt(n - 0.5)
+			local theta = 2 * PI * k / (phi * phi)
+			local x = r * cos(theta) * s
+			local y = r * sin(theta) * s
+			local d = v3d.rotate(dir, y, up)
+			directions[k + 1] = v3d.rotate(d, x, right)
+		end
+	end
+	return directions
 end
 
 local function process_hit(pointed_thing, spec, dir)
@@ -271,7 +354,7 @@ local function process_round(round)
 		return
 	end
 	local p1 = round.pos
-	local p2 = vector.add(p1, vector.multiply(round.dir, round.spec.step))
+	local p2 = v3d.add(p1, v3d.multiply(round.dir, round.spec.step))
 	local ray = minetest.raycast(p1, p2, true, true)
 	local pointed_thing = ray:next() or {type="nothing"}
 	if pointed_thing.type ~= "nothing" then
@@ -292,31 +375,40 @@ local function fire_weapon(player, itemstack, spec, extended)
 	if not dir or not pos then
 		return
 	end
-	pos.y = pos.y + config.camera_height
-	spec.origin = vector.add(pos, dir)
+	pos.y = pos.y + player:get_properties().eye_height
+	spec.origin = v3d.add(pos, dir)
 	local interval = spec.tool_caps.full_punch_interval
 	shots[spec.user] = minetest.get_us_time() / 1000000 + interval
-	minetest.sound_play(spec.sound, {object=player})
-	if spec.bullet_image then
-		minetest.add_particle({
-			pos = pos,
-			velocity = vector.multiply(dir, 30),
-			acceleration = {x=0, y=0, z=0},
-			expirationtime = 0.5,
-			size = 0.25,
-			texture = spec.bullet_image,
+	local sound = spec.sounds.shot or "shooter_pistol"
+	minetest.sound_play(sound, {object=player})
+	local speed = spec.step / (config.rounds_update_time * 2)
+	local time = spec.range / speed
+	local directions = get_directions(dir, spec)
+	for _, d in pairs(directions) do
+		if spec.bullet_image then
+			minetest.add_particle({
+				pos = pos,
+				velocity = v3d.multiply(d, speed),
+				acceleration = {x=0, y=0, z=0},
+				expirationtime = time,
+				size = 0.25,
+				texture = spec.bullet_image,
+			})
+		end
+		process_round({
+			spec = spec,
+			pos = v3d.new(spec.origin),
+			dir = d,
+			dist = 0,
 		})
 	end
-	process_round({
-		spec = spec,
-		pos = vector.new(spec.origin),
-		dir = dir,
-		dist = 0,
-	})
 	if extended then
 		itemstack:add_wear(spec.wear)
 		if itemstack:get_count() == 0 then
-			itemstack = spec.unloaded_item
+			local def = shooter.registered_weapons[spec.name] or {}
+			if def.unloaded_item then
+				itemstack = def.unloaded_item.name or ""
+			end
 			player:set_wielded_item(itemstack)
 			return
 		end
@@ -356,10 +448,10 @@ shooter.blast = function(pos, radius, fleshy, distance, user)
 	if not user then
 		return
 	end
-	pos = vector.round(pos)
+	pos = v3d.round(pos)
 	local name = user:get_player_name()
-	local p1 = vector.subtract(pos, radius)
-	local p2 = vector.add(pos, radius)
+	local p1 = v3d.subtract(pos, radius)
+	local p2 = v3d.add(pos, radius)
 	minetest.sound_play("shooter_explode", {
 		pos = pos,
 		gain = 10,
@@ -394,7 +486,7 @@ shooter.blast = function(pos, radius, fleshy, distance, user)
 		if shooter.is_valid_object(obj) then
 			local obj_pos = obj:get_pos()
 			local dist = vector.distance(obj_pos, pos)
-			local damage = (fleshy * 0.707106 ^ dist) * 2
+			local damage = (fleshy * 0.707106 ^ dist) * 2 * config.damage_multiplier
 			if dist ~= 0 then
 				obj_pos.y = obj_pos.y + 1
 				local blast_pos = {x=pos.x, y=pos.y + 4, z=pos.z}

@@ -26,7 +26,9 @@ shooter.register_weapon("shooter_guns:pistol", {
 		step = 20,
 		tool_caps = {full_punch_interval=0.5, damage_groups={fleshy=2}},
 		groups = {snappy=3, fleshy=3, oddly_breakable_by_hand=3},
-		sound = "shooter_pistol",
+		sounds = {
+			shot = "shooter_pistol",
+		},
 		bullet_image = "shooter_cap.png",
 		particles = {
 			amount = 8,
@@ -45,7 +47,9 @@ shooter.register_weapon("shooter_guns:rifle", {
 		step = 30,
 		tool_caps = {full_punch_interval=1.0, damage_groups={fleshy=3}},
 		groups = {snappy=3, crumbly=3, choppy=3, fleshy=2, oddly_breakable_by_hand=2},
-		sound = "shooter_rifle",
+		sounds = {
+			shot = "shooter_rifle",
+		},
 		bullet_image = "shooter_bullet.png",
 		particles = {
 			amount = 12,
@@ -62,14 +66,18 @@ shooter.register_weapon("shooter_guns:shotgun", {
 		rounds = 50,
 		range = 30,
 		step = 15,
-		tool_caps = {full_punch_interval=1.5, damage_groups={fleshy=4}},
-		groups = {cracky=3, snappy=2, crumbly=2, choppy=2, fleshy=1, oddly_breakable_by_hand=1},
-		sound = "shooter_shotgun",
-		bullet_image = "smoke_puff.png",
+		shots = 15,
+		spread = 10,
+		tool_caps = {full_punch_interval=0.5, damage_groups={fleshy=2}},
+		groups = {snappy=3, fleshy=3, oddly_breakable_by_hand=3},
+		sounds = {
+			shot = "shooter_shotgun",
+		},
+		bullet_image = "shooter_cap.png",
 		particles = {
-			amount = 16,
-			minsize = 1,
-			maxsize = 2,
+			amount = 8,
+			minsize = 0.25,
+			maxsize = 0.75,
 		},
 	},
 })
@@ -79,12 +87,14 @@ shooter.register_weapon("shooter_guns:machine_gun", {
 	inventory_image = "shooter_smgun.png",
 	spec = {
 		automatic = true,
-		rounds = 100,
+		rounds = 10,
 		range = 160,
 		step = 20,
 		tool_caps = {full_punch_interval=0.1, damage_groups={fleshy=2}},
 		groups = {snappy=3, fleshy=3, oddly_breakable_by_hand=3},
-		sound = "shooter_pistol",
+		sounds = {
+			shot = "shooter_pistol",
+		},
 		bullet_image = "shooter_cap.png",
 		particles = {
 			amount = 4,
