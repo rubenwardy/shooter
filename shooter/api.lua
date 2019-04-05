@@ -376,7 +376,7 @@ local function fire_weapon(player, itemstack, spec, extended)
 		return
 	end
 	pos.y = pos.y + player:get_properties().eye_height
-	spec.origin = v3d.add(pos, dir)
+	spec.origin = v3d.add(pos, v3d.multiply(dir, 1.5))
 	local interval = spec.tool_caps.full_punch_interval
 	shots[spec.user] = minetest.get_us_time() / 1000000 + interval
 	local sound = spec.sounds.shot or "shooter_pistol"
@@ -405,7 +405,7 @@ local function fire_weapon(player, itemstack, spec, extended)
 	if extended then
 		itemstack:add_wear(spec.wear)
 		if itemstack:get_count() == 0 then
-			local def = shooter.registered_weapons[spec.name] or {}
+			local def = minetest.registered_items[spec.name] or {}
 			if def.unloaded_item then
 				itemstack = def.unloaded_item.name or ""
 			end
