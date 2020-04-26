@@ -73,6 +73,12 @@ shooter.register_weapon = function(name, def)
 	if not def.spec.sounds.shot and def.spec.sound then
 		def.spec.sounds.shot = def.spec.sound
 	end
+
+	-- Add ranged group to all registered weapons
+	def.groups = def.groups or {}
+	def.groups.ranged = 1
+	def.groups.not_in_creative_inventory = 1
+
 	-- Fix definition table
 	def.spec.reload_item = def.reload_item or "shooter:ammo"
 	def.spec.tool_caps.full_punch_interval = math.max(server_step,
@@ -105,7 +111,7 @@ shooter.register_weapon = function(name, def)
 		end,
 		unloaded_item = def.unloaded_item,
 		on_hit = def.on_hit,
-		groups = {not_in_creative_inventory=1},
+		groups = def.groups,
 	})
 	-- Register unloaded item tool
 	minetest.register_tool(name, {
