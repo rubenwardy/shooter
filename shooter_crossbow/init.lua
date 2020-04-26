@@ -214,7 +214,7 @@ for _, color in pairs(dye_basecolors) do
 	minetest.register_tool("shooter_crossbow:crossbow_loaded_"..color, {
 		description = "Crossbow",
 		inventory_image = get_texture("crossbow_loaded", color),
-		groups = {not_in_creative_inventory=1},
+		groups = {crossbow=1, not_in_creative_inventory=1},
 		on_use = function(itemstack, user)
 			minetest.sound_play("shooter_click", {object=user})
 			if not minetest.setting_getbool("creative_mode") then
@@ -259,6 +259,7 @@ end
 minetest.register_tool("shooter_crossbow:crossbow", {
 	description = "Crossbow",
 	inventory_image = "shooter_crossbow.png",
+	groups = { crossbow = 1 },
 	on_use = function(itemstack, user)
 		local inv = user:get_inventory()
 		local stack = inv:get_stack("main", user:get_wield_index() + 1)
