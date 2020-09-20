@@ -45,7 +45,8 @@ shooter.register_weapon("shooter_guns:rifle", {
 		rounds = 100,
 		range = 240,
 		step = 30,
-		tool_caps = {full_punch_interval=1.0, damage_groups={fleshy=3, ranged=1}},
+		automatic = true,
+		tool_caps = {full_punch_interval=1.0, damage_groups={fleshy=6, ranged=1}},
 		groups = {snappy=3, crumbly=3, choppy=3, fleshy=2, oddly_breakable_by_hand=2},
 		sounds = {
 			shot = "shooter_rifle",
