@@ -386,6 +386,15 @@ local function fire_weapon(player, itemstack, spec, extended)
 	if not dir or not pos then
 		return
 	end
+
+	if spec.user_knockback then
+		if vector.distance(player:get_velocity(), vector.new()) < 10 then
+			local vel = vector.multiply(minetest.yaw_to_dir(player:get_look_horizontal()), -spec.user_knockback)
+			vel.y = spec.user_knockback/2
+			player:add_player_velocity(vel)
+		end
+	end
+
 	pos.y = pos.y + player:get_properties().eye_height
 	spec.origin = pos
 	local interval = spec.tool_caps.full_punch_interval
@@ -449,6 +458,7 @@ shooter.fire_weapon = function(player, itemstack, spec)
 		end
 		shooting[name] = true
 	end
+
 	spec.user = name
 	spec.name = itemstack:get_name()
 	spec.wield_idx = player:get_wield_index()

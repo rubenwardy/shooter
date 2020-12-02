@@ -42,6 +42,7 @@ shooter.register_weapon("shooter_guns:rifle", {
 	description = "Rifle",
 	inventory_image = "shooter_rifle.png",
 	spec = {
+		user_knockback = 4,
 		rounds = 100,
 		range = 240,
 		step = 30,
@@ -64,12 +65,13 @@ shooter.register_weapon("shooter_guns:shotgun", {
 	description = "Shotgun",
 	inventory_image = "shooter_shotgun.png",
 	spec = {
+		user_knockback = 12,
 		rounds = 12,
 		range = 30,
 		step = 15,
 		shots = 15,
 		spread = 10,
-		tool_caps = {full_punch_interval=1, damage_groups={fleshy=2, ranged=1}},
+		tool_caps = {full_punch_interval=1.5, damage_groups={fleshy=2, ranged=1}},
 		groups = {snappy=3, fleshy=3, oddly_breakable_by_hand=3},
 		sounds = {
 			shot = "shooter_shotgun",
@@ -88,7 +90,8 @@ shooter.register_weapon("shooter_guns:machine_gun", {
 	inventory_image = "shooter_smgun.png",
 	spec = {
 		automatic = true,
-		rounds = 32,
+		user_knockback = 2,
+		rounds = 42,
 		range = 160,
 		step = 20,
 		tool_caps = {full_punch_interval=0.1, damage_groups={fleshy=2, ranged=1}},
