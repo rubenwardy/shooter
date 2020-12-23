@@ -390,7 +390,9 @@ local function fire_weapon(player, itemstack, spec, extended)
 	if spec.user_knockback then
 		if vector.distance(player:get_velocity(), vector.new()) < 10 then
 			local vel = vector.multiply(minetest.yaw_to_dir(player:get_look_horizontal()), -spec.user_knockback)
-			vel.y = spec.user_knockback/2
+			if vel.y > 0 then
+				vel.y = spec.user_knockback/5
+			end
 			player:add_player_velocity(vel)
 		end
 	end

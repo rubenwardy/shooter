@@ -71,7 +71,7 @@ shooter.register_weapon("shooter_guns:shotgun", {
 		step = 15,
 		shots = 15,
 		spread = 10,
-		tool_caps = {full_punch_interval=1.5, damage_groups={fleshy=2, ranged=1}},
+		tool_caps = {full_punch_interval=1.7, damage_groups={fleshy=2, ranged=1}},
 		groups = {snappy=3, fleshy=3, oddly_breakable_by_hand=3},
 		sounds = {
 			shot = "shooter_shotgun",
