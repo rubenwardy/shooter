@@ -26,7 +26,7 @@ shooter.config = {
 	admin_weapons = false,
 	enable_blasting = false,
 	enable_particle_fx = true,
-	enable_protection = false,
+	enable_protection = true,
 	enable_crafting = true,
 	explosion_texture = "shooter_hit.png",
 	node_drops = false,
@@ -196,9 +196,10 @@ shooter.is_valid_object = function(object)
 end
 
 shooter.punch_node = function(pos, spec)
-	if config.enable_protection and minetest.is_protected(pos, spec.user) then
+	if config.enable_protection and minetest.is_protected(pos, spec.user, {is_gun = true}) then
 		return
 	end
+
 	local node = minetest.get_node(pos)
 	if not node then
 		return
@@ -207,11 +208,16 @@ shooter.punch_node = function(pos, spec)
 	if not item then
 		return
 	end
+
+	if node.name:find("ctf_traps") and item.on_dig then
+		item.on_dig(pos, node, minetest.get_player_by_name(spec.user), {do_dig = false})
+	end
+
 	if item.groups then
 		for k, v in pairs(spec.groups) do
 			local level = item.groups[k] or 0
 			if level >= v then
-				minetest.remove_node(pos)
+				minetest.dig_node(pos)
 				shooter.play_node_sound(node, pos)
 				if item.tiles then
 					local texture = item.tiles[1]
