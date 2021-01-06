@@ -86,12 +86,12 @@ shooter.register_weapon("shooter_guns:shotgun", {
 })
 
 shooter.register_weapon("shooter_guns:machine_gun", {
-	description = "Sub Machine Gun",
+	description = "Machine Gun",
 	inventory_image = "shooter_smgun.png",
 	spec = {
 		automatic = true,
-		user_knockback = 2,
-		rounds = 42,
+		user_knockback = 1,
+		rounds = 100,
 		range = 160,
 		step = 20,
 		tool_caps = {full_punch_interval=0.1, damage_groups={fleshy=2, ranged=1}},
