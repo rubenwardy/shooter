@@ -46,7 +46,6 @@ shooter.register_weapon("shooter_guns:rifle", {
 		rounds = 100,
 		range = 240,
 		step = 30,
-		automatic = true,
 		tool_caps = {full_punch_interval=1.0, damage_groups={fleshy=7, ranged=1}},
 		groups = {snappy=3, crumbly=3, choppy=3, fleshy=2, oddly_breakable_by_hand=2},
 		sounds = {
@@ -89,8 +88,8 @@ shooter.register_weapon("shooter_guns:machine_gun", {
 	description = "Machine Gun",
 	inventory_image = "shooter_smgun.png",
 	spec = {
-		automatic = true,
 		user_knockback = 1,
+		shots = 3,
 		rounds = 100,
 		range = 160,
 		step = 20,
