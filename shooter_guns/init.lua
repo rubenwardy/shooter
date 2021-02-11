@@ -89,11 +89,10 @@ shooter.register_weapon("shooter_guns:machine_gun", {
 	inventory_image = "shooter_smgun.png",
 	spec = {
 		user_knockback = 1,
-		shots = 3,
 		rounds = 100,
 		range = 160,
 		step = 20,
-		tool_caps = {full_punch_interval=0.1, damage_groups={fleshy=2, ranged=1}},
+		tool_caps = {full_punch_interval=0.2, damage_groups={fleshy=4, ranged=1}},
 		groups = {snappy=3, fleshy=3, oddly_breakable_by_hand=3},
 		sounds = {
 			shot = "shooter_pistol",
