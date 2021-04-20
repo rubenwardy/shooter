@@ -137,24 +137,23 @@ end
 
 local timer = 0
 minetest.register_globalstep(function(dtime)
-    timer = timer + dtime
-    if timer >= 1 then
+	timer = timer + dtime
+	if timer >= 1 then
 		timer = 0
-        for _, player in ipairs(minetest.get_connected_players()) do
-            local name = player and player:get_player_name()
-            local wielditem = player:get_wielded_item()
-            if wielditem:get_name() == "shooter_rocket:rocket_gun_loaded" then
-                local wielditem = player:get_wielded_item()
+		for _, player in ipairs(minetest.get_connected_players()) do
+			local name = player and player:get_player_name()
+			local wielditem = player:get_wielded_item()
+			if wielditem:get_name() == "shooter_rocket:rocket_gun_loaded" then
+				local wielditem = player:get_wielded_item()
 				physics.set(name, "shooter_rocket:physics", {
 					speed = 0.7
 				})
-            else
+			else
 				physics.remove(name, "shooter_rocket:physics")
 			end
-        end
-    end
+		end
+	end
 end)
-
 
 --Backwards compatibility
 minetest.register_alias("shooter:rocket", "shooter_rocket:rocket")
