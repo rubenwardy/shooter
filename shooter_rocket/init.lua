@@ -138,7 +138,8 @@ end
 local timer = 0
 minetest.register_globalstep(function(dtime)
     timer = timer + dtime
-    if timer >= 0.1 then
+    if timer >= 1 then
+	timer = 0
         for _, player in ipairs(minetest.get_connected_players()) do
             local name = player and player:get_player_name()
             local wielditem = player:get_wielded_item()
@@ -147,7 +148,6 @@ minetest.register_globalstep(function(dtime)
                 player:set_physics_override({
                     speed = 0.7
                 })
-                timer = 0
             end
         end
     end
