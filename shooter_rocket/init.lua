@@ -20,7 +20,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 local plcooldown = {}
 local COOLDOWN = 5
 
-
 minetest.register_on_leaveplayer(function(player)
 	plcooldown[player:get_player_name()] = nil
 end)
@@ -78,14 +77,14 @@ minetest.register_tool("shooter_rocket:rocket_gun_loaded", {
 	inventory_image = "shooter_rocket_gun_loaded.png",
 	groups = {not_in_creative_inventory=1},
 	on_use = function(itemstack, user, pointed_thing)
-		if plcooldown[user:get_player_name()] ~= 0 then
+		if plcooldown[user:get_player_name()] then
 		hud_event.new(user:get_player_name(), {
 			name = "shooter_rocket:cooldown",
 			color = "0xC1FF44",
 			value = "Your rocket has a cooldown!"
 		})
 		else
-			if not minetest.settings:get_bool("creative_mode") then
+			if not minetest.setting_getbool("creative_mode") then
 				itemstack:add_wear(65535 / 50)
 			end
 			itemstack = "shooter_rocket:rocket_gun 1 "..itemstack:get_wear()
@@ -99,6 +98,7 @@ minetest.register_tool("shooter_rocket:rocket_gun_loaded", {
 			local pos = user:get_pos()
 			local dir = user:get_look_dir()
 			local yaw = user:get_look_horizontal()
+			local username = user:get_player_name()
 			if pos and dir and yaw then
 				pos.y = pos.y + user:get_properties().eye_height
 				local obj = minetest.add_entity(pos, "shooter_rocket:rocket_entity")
@@ -109,14 +109,14 @@ minetest.register_tool("shooter_rocket:rocket_gun_loaded", {
 					obj:set_yaw(yaw + math.pi / 2)
 					local ent = obj:get_luaentity()
 					if ent then
-						ent.user = user:get_player_name()
+						ent.user = username
 					end
 				end
 			end
-			plcooldown[user:get_player_name()] = COOLDOWN
+			plcooldown[username] = COOLDOWN
 			minetest.after(COOLDOWN, function(user)
-				if plcooldown[user:get_player_name()] then
-					plcooldown[user:get_player_name()] = nil
+				if plcooldown[username] then
+					plcooldown[username] = nil
 				end
 			end, user)
 		end
@@ -181,3 +181,4 @@ end)
 minetest.register_alias("shooter:rocket", "shooter_rocket:rocket")
 minetest.register_alias("shooter:rocket_gun", "shooter_rocket:rocket_gun")
 minetest.register_alias("shooter:rocket_gun_loaded", "shooter_rocket:rocket_gun_loaded")
+
