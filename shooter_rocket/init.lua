@@ -116,7 +116,7 @@ minetest.register_tool("shooter_rocket:rocket_gun_loaded", {
 			plcooldown[user:get_player_name()] = COOLDOWN
 			minetest.after(COOLDOWN, function(user)
 				if plcooldown[user:get_player_name()] then
-					plcooldown[user:get_player_name()] = 0
+					plcooldown[user:get_player_name()] = nil
 				end
 			end, user)
 		end
