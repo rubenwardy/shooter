@@ -84,7 +84,7 @@ minetest.register_tool("shooter_rocket:rocket_gun_loaded", {
 		if plcooldown[user:get_player_name()] ~= 0 then
 			minetest.chat_send_player(user:get_player_name(), "Your rocket has a cooldown!")
 		else
-			if not minetest.setting_getbool("creative_mode") then
+			if not minetest.settings:get_bool("creative_mode") then
 				itemstack:add_wear(65535 / 50)
 			end
 			itemstack = "shooter_rocket:rocket_gun 1 "..itemstack:get_wear()
