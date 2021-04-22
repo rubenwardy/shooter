@@ -82,7 +82,11 @@ minetest.register_tool("shooter_rocket:rocket_gun_loaded", {
 	groups = {not_in_creative_inventory=1},
 	on_use = function(itemstack, user, pointed_thing)
 		if plcooldown[user:get_player_name()] ~= 0 then
-			minetest.chat_send_player(user:get_player_name(), "Your rocket has a cooldown!")
+		hud_event.new(user:get_player_name(), {
+			name = "shooter_rocket:cooldown",
+			color = "0xC1FF44",
+			value = "Your rocket has a cooldown!"
+		})
 		else
 			if not minetest.settings:get_bool("creative_mode") then
 				itemstack:add_wear(65535 / 50)
