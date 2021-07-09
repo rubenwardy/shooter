@@ -70,7 +70,7 @@ minetest.register_tool("shooter_rocket:rocket_gun_loaded", {
 	inventory_image = "shooter_rocket_gun_loaded.png",
 	groups = {not_in_creative_inventory=1},
 	on_use = function(itemstack, user, pointed_thing)
-		if not minetest.setting_getbool("creative_mode") then
+		if not minetest.settings:get_bool("creative_mode") then
 			itemstack:add_wear(65535 / 50)
 		end
 		itemstack = "shooter_rocket:rocket_gun 1 "..itemstack:get_wear()
@@ -109,7 +109,7 @@ minetest.register_tool("shooter_rocket:rocket_gun", {
 		local inv = user:get_inventory()
 		if inv:contains_item("main", "shooter_rocket:rocket") then
 			minetest.sound_play("shooter_reload", {object=user})
-			if not minetest.setting_getbool("creative_mode") then
+			if not minetest.settings:get_bool("creative_mode") then
 				inv:remove_item("main", "shooter_rocket:rocket 1")
 			end
 			itemstack = "shooter_rocket:rocket_gun_loaded 1 "..itemstack:get_wear()
