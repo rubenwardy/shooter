@@ -85,7 +85,7 @@ minetest.register_entity("shooter_flaregun:flare_entity", {
 				if minetest.get_node(pos).name == "air" and
 						node.name ~= "default:water_source" and
 						node.name ~= "default:water_flowing" then
-					minetest.place_node(pos, {name="shooter_flaregun:flare_light"})
+					minetest.set_node(pos, {name="shooter_flaregun:flare_light"})
 					local meta = minetest.get_meta(pos)
 					pos.y = pos.y - 0.1
 					local id = minetest.add_particlespawner({
